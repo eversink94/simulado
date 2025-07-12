@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Simulados de Concursos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5D5CDE;
+            --secondary: #f8f9fa;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(93, 92, 222, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .btn-info {
+            background: var(--info);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .question-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .question-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .question-card.selected {
+            border-color: var(--primary);
+            background: rgba(93, 92, 222, 0.05);
+        }
+
+        .question-card.correct {
+            border-color: var(--success);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .question-card.incorrect {
+            border-color: var(--danger);
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--danger);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            background: var(--primary);
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .result-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .admin-panel {
+            background: var(--dark);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .question-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .question-item {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .question-item:hover {
+            background: var(--light);
+        }
+
+        .question-item:last-child {
+            border-bottom: none;
+        }
+
+        .import-area {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .timer {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela Inicial -->
+        <div id="home-screen">
+            <div class="card">
+                <div class="card-header">
+                    <h1><i class="fas fa-graduation-cap"></i> Sistema de Simulados de Concursos</h1>
+                    <p>Prepare-se para o seu concurso público</p>
+                </div>
+                <div class="card-body">
+                    <!-- Estatísticas -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-questoes-stat">0</div>
+                            <div>Questões Cadastradas</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-materias-stat">0</div>
+                            <div>Matérias</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-simulados-stat">0</div>
+                            <div>Simulados Realizados</div>
+                        </div>
+                    </div>
+
+                    <div class="grid">
+                        <div>
+                            <h3><i class="fas fa-play-circle"></i> Iniciar Simulado</h3>
+                            <div class="form-group">
+                                <label for="materia">Matéria:</label>
+                                <select id="materia">
+                                    <option value="">Todas as matérias</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="numQuestoes">Número de questões:</label>
+                                <select id="numQuestoes">
+                                    <option value="5">5 questões</option>
+                                    <option value="10" selected>10 questões</option>
+                                    <option value="15">15 questões</option>
+                                    <option value="20">20 questões</option>
+                                    <option value="30">30 questões</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tempo">Tempo limite:</label>
+                                <select id="tempo">
+                                    <option value="300">5 minutos</option>
+                                    <option value="600">10 minutos</option>
+                                    <option value="900" selected>15 minutos</option>
+                                    <option value="1800">30 minutos</option>
+                                    <option value="3600">60 minutos</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="iniciarSimulado()">
+                                <i class="fas fa-rocket"></i> Iniciar Simulado
+                            </button>
+                        </div>
+                        
+                        <div>
+    <h3><i class="fas fa-cog"></i> Administração</h3>
+    <p>Gerencie as questões do sistema</p>
+    <button class="btn btn-success" onclick="mostrarAdmin()">
+        <i class="fas fa-plus"></i> Adicionar Questão
+    </button>
+    <button class="btn btn-warning" onclick="mostrarImporte()">
+        <i class="fas fa-upload"></i> Importar em Lote
+    </button>
+    <button class="btn btn-info" onclick="mostrarQuestoes()">
+        <i class="fas fa-list"></i> Ver Questões
+    </button>
+    <button class="btn" onclick="exportarQuestoes()">
+        <i class="fas fa-download"></i> Exportar
+    </button>
+    <br>
+    <button class="btn btn-danger" onclick="mostrarOpcoesManutenção()" style="margin-top: 10px;">
+        <i class="fas fa-tools"></i> Manutenção do Sistema
+    </button>
+</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Importação em Lote -->
+        <div id="import-screen" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-upload"></i> Importar Questões em Lote</h2>
+                    <button class="btn" onclick="voltarHome()" style="float: right;">
+                        <i class="fas fa-home"></i> Voltar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom: 30px;">
+                        <h3><i class="fas fa-info-circle"></i> Como Usar</h3>
+                        <p>Cole abaixo o JSON com as questões no formato correto ou use o template para IA:</p>
+                        
+                        <div style="margin: 20px 0;">
+                            <button class="btn btn-info" onclick="mostrarTemplate()">
+                                <i class="fas fa-robot"></i> Ver Template para IA
+                            </button>
+                            <button class="btn" onclick="mostrarExemplo()">
+                                <i class="fas fa-eye"></i> Ver Exemplo
+                            </button>
+                            <button class="btn btn-warning" onclick="carregarBancoPadrao()">
+                                <i class="fas fa-database"></i> Carregar Questões Padrão
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="json-questoes">Cole o JSON das questões aqui:</label>
+                        <textarea id="json-questoes" rows="15" placeholder="Cole aqui o JSON com as questões..."></textarea>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button class="btn btn-success" onclick="importarQuestoes()">
+                            <i class="fas fa-upload"></i> Importar Questões
+                        </button>
+                        <button class="btn btn-danger" onclick="limparImporte()">
+                            <i class="fas fa-trash"></i> Limpar
+                        </button>
+                    </div>
+
+                    <div id="import-result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- Template para IA -->
+            <div id="template-ia" class="card hidden">
+                <div class="card-header">
+                    <h3><i class="fas fa-robot"></i> Template para IA</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Use este prompt para pedir questões à IA:</strong></p>
+                    <div class="code-block" id="template-prompt">
+Crie 10 questões de concurso público no formato JSON abaixo. 
+
+MATÉRIAS: Português, Matemática, Raciocínio Lógico, Informática, Conhecimentos Gerais, Direito Constitucional, Direito Administrativo
+
+FORMATO OBRIGATÓRIO:
+[
+  {
+    "materia": "Nome da Matéria",
+    "dificuldade": "Fácil|Médio|Difícil",
+    "pergunta": "Texto da pergunta",
+    "alternativas": {
+      "A": "Primeira alternativa",
+      "B": "Segunda alternativa", 
+      "C": "Terceira alternativa",
+      "D": "Quarta alternativa",
+      "E": "Quinta alternativa"
+    },
+    "resposta": "A|B|C|D|E",
+    "explicacao": "Explicação detalhada da resposta"
+  }
+]
+
+INSTRUÇÕES:
+- Crie questões de nível [FÁCIL/MÉDIO/DIFÍCIL] 
+- Foque na matéria: [ESPECIFIQUE A MATÉRIA]
+- Use linguagem formal e técnica adequada para concursos
+- Inclua explicações educativas
+- Varie os temas dentro da matéria escolhida
+- Garanta que apenas UMA alternativa está correta
+- Retorne APENAS o JSON, sem texto adicional
+                    </div>
+                    <button class="btn" onclick="copiarTemplate()">
+                        <i class="fas fa-copy"></i> Copiar Template
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela do Simulado -->
+        <div id="simulado-screen" class="hidden">
+            <div id="timer" class="timer">
+                <i class="fas fa-clock"></i> <span id="tempo-restante">15:00</span>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>Questão <span id="questao-atual">1</span> de <span id="total-questoes">10</span></h2>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill" style="width: 10%"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="questao-container">
+                        <!-- Questão será carregada aqui -->
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn" onclick="questaoAnterior()" id="btn-anterior" disabled>
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        <button class="btn" onclick="proximaQuestao()" id="btn-proximo">
+                            Próxima <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="btn btn-danger hidden" onclick="finalizarSimulado()" id="btn-finalizar">
+                            <i class="fas fa-flag-checkered"></i> Finalizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Resultado -->
+        <div id="resultado-screen" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-trophy"></i> Resultado do Simulado</h2>
+                </div>
+                <div class="card-body" style="text-align: center;">
+                    <div id="resultado-circle" class="result-circle">
+                        <span id="pontuacao-percent">0%</span>
+                    </div>
+                    <h3>Sua pontuação: <span id="pontuacao-texto">0/10</span></h3>
+                    <p>Tempo utilizado: <span id="tempo-utilizado">0min</span></p>
+                    
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-success" onclick="mostrarRevisao()">
+                            <i class="fas fa-search"></i> Revisar Questões
+                        </button>
+                        <button class="btn" onclick="novoSimulado()">
+                            <i class="fas fa-redo"></i> Novo Simulado
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Revisão -->
+        <div id="revisao-screen" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clipboard-list"></i> Revisão das Questões</h2>
+                    <button class="btn" onclick="voltarResultado()" style="float: right;">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="revisao-container">
+                        <!-- Revisão será carregada aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Administração -->
+        <div id="admin-screen" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> Adicionar Nova Questão</h2>
+                    <button class="btn" onclick="voltarHome()" style="float: right;">
+                        <i class="fas fa-home"></i> Voltar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form id="form-questao">
+                        <div class="grid">
+                            <div class="form-group">
+                                <label for="nova-materia">Matéria:</label>
+                                <select id="nova-materia" required>
+                                    <option value="Português">Português</option>
+                                    <option value="Matemática">Matemática</option>
+                                    <option value="Raciocínio Lógico">Raciocínio Lógico</option>
+                                    <option value="Informática">Informática</option>
+                                    <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
+                                    <option value="Direito Constitucional">Direito Constitucional</option>
+                                    <option value="Direito Administrativo">Direito Administrativo</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="nova-dificuldade">Dificuldade:</label>
+                                <select id="nova-dificuldade" required>
+                                    <option value="Fácil">Fácil</option>
+                                    <option value="Médio">Médio</option>
+                                    <option value="Difícil">Difícil</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-pergunta">Pergunta:</label>
+                            <textarea id="nova-pergunta" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-alternativa-a">Alternativa A:</label>
+                            <input type="text" id="nova-alternativa-a" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-alternativa-b">Alternativa B:</label>
+                            <input type="text" id="nova-alternativa-b" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-alternativa-c">Alternativa C:</label>
+                            <input type="text" id="nova-alternativa-c" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-alternativa-d">Alternativa D:</label>
+                            <input type="text" id="nova-alternativa-d" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-alternativa-e">Alternativa E:</label>
+                            <input type="text" id="nova-alternativa-e" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-resposta">Resposta Correta:</label>
+                            <select id="nova-resposta" required>
+                                <option value="">Selecione...</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nova-explicacao">Explicação:</label>
+                            <textarea id="nova-explicacao" rows="3" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Salvar Questão
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Questões -->
+        <div id="questoes-screen" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> Questões Cadastradas</h2>
+                    <button class="btn" onclick="voltarHome()" style="float: right;">
+                        <i class="fas fa-home"></i> Voltar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="filtros-questoes" style="margin-bottom: 20px;">
+                        <select id="filtro-materia" onchange="filtrarQuestoes()">
+                            <option value="">Todas as matérias</option>
+                        </select>
+                    </div>
+                    <div id="lista-questoes" class="question-list">
+                        <!-- Lista de questões será carregada aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+<!-- Tela de Manutenção do Sistema -->
+<div id="manutencao-screen" class="hidden">
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-tools"></i> Manutenção do Sistema</h2>
+            <button class="btn" onclick="voltarHome()" style="float: right;">
+                <i class="fas fa-home"></i> Voltar
+            </button>
+        </div>
+        <div class="card-body">
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                <h4><i class="fas fa-exclamation-triangle" style="color: #856404;"></i> Área de Manutenção</h4>
+                <p style="color: #856404; margin: 10px 0;">
+                    <strong>Atenção:</strong> As operações abaixo são irreversíveis. 
+                    Certifique-se de fazer backup antes de continuar.
+                </p>
+            </div>
+
+            <div class="grid">
+                <div class="card" style="border: 2px solid #ffc107;">
+                    <div class="card-body">
+                        <h4><i class="fas fa-broom"></i> Limpeza Parcial</h4>
+                        <p>Remove questões por matéria específica</p>
+                        
+                        <div class="form-group">
+                            <label for="materia-limpeza">Matéria a remover:</label>
+                            <select id="materia-limpeza">
+                                <option value="">Selecione uma matéria...</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-warning" onclick="limparPorMateria()">
+                            <i class="fas fa-filter"></i> Remover por Matéria
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="border: 2px solid #dc3545;">
+                    <div class="card-body">
+                        <h4><i class="fas fa-trash-alt"></i> Limpeza Total</h4>
+                        <p>Remove TODAS as questões do sistema</p>
+                        
+                        <div style="margin: 20px 0;">
+                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                <input type="checkbox" id="manter-padrao"> 
+                                Manter questões padrão do sistema
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="confirmo-exclusao"> 
+                                Confirmo que quero apagar as questões
+                            </label>
+                        </div>
+                        
+                        <button class="btn btn-danger" onclick="confirmarLimpezaTotal()" id="btn-limpeza-total" disabled>
+                            <i class="fas fa-nuclear"></i> Apagar TODAS as Questões
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border: 2px solid #17a2b8; margin-top: 20px;">
+                <div class="card-body">
+                    <h4><i class="fas fa-chart-bar"></i> Estatísticas Detalhadas</h4>
+                    <div id="stats-detalhadas">
+                        <!-- Estatísticas serão carregadas aqui -->
+                    </div>
+                    <button class="btn btn-info" onclick="atualizarEstatisticasDetalhadas()">
+                        <i class="fas fa-sync"></i> Atualizar Estatísticas
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultado-manutencao" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+</div>
+    </div>
+
+    <script>
+        // Banco de dados padrão das questões
+        const questoesPadrao = [
+            {
+                id: 1,
+                materia: "Português",
+                dificuldade: "Médio",
+                pergunta: "Em qual alternativa a vírgula está empregada corretamente?",
+                alternativas: {
+                    A: "O livro, que comprei ontem está na mesa",
+                    B: "Maria, a professora, chegou cedo",
+                    C: "Estudei muito, mas, não passei",
+                    D: "Os alunos que, estudaram passaram",
+                    E: "Comprei, pães frutas e leite"
+                },
+                resposta: "B",
+                explicacao: "O aposto explicativo 'a professora' deve vir entre vírgulas. As outras alternativas apresentam erros na pontuação."
+            },
+            {
+                id: 2,
+                materia: "Matemática",
+                dificuldade: "Fácil",
+                pergunta: "Se 3x + 5 = 20, qual o valor de x?",
+                alternativas: {
+                    A: "3",
+                    B: "4", 
+                    C: "5",
+                    D: "6",
+                    E: "7"
+                },
+                resposta: "C",
+                explicacao: "Resolvendo a equação: 3x + 5 = 20 → 3x = 20 - 5 → 3x = 15 → x = 15/3 → x = 5."
+            },
+            {
+                id: 3,
+                materia: "Raciocínio Lógico",
+                dificuldade: "Médio",
+                pergunta: "Em uma sequência lógica, os números seguem o padrão: 2, 6, 18, 54, ... Qual é o próximo número?",
+                alternativas: {
+                    A: "108",
+                    B: "162",
+                    C: "180", 
+                    D: "216",
+                    E: "324"
+                },
+                resposta: "B",
+                explicacao: "A sequência multiplica cada termo por 3: 2×3=6, 6×3=18, 18×3=54, 54×3=162. O próximo número é 162."
+            }
+        ];
+
+        // Variáveis do sistema
+        let questoes = [];
+        let simuladoAtual = {
+            questoes: [],
+            respostas: {},
+            questaoAtual: 0,
+            tempoInicial: 0,
+            tempoRestante: 0,
+            timer: null
+        };
+
+        // Carregar dados do localStorage
+        function carregarDados() {
+            const questoesSalvas = localStorage.getItem('questoes');
+            if (questoesSalvas) {
+                questoes = JSON.parse(questoesSalvas);
+            } else {
+                questoes = [...questoesPadrao];
+                salvarQuestoes();
+            }
+            atualizarEstatisticas();
+            atualizarSelectMaterias();
+        }
+
+        // Salvar questões
+        function salvarQuestoes() {
+            localStorage.setItem('questoes', JSON.stringify(questoes));
+            atualizarEstatisticas();
+            atualizarSelectMaterias();
+        }
+
+        // Atualizar estatísticas
+        function atualizarEstatisticas() {
+            const totalQuestoes = questoes.length;
+            const materias = [...new Set(questoes.map(q => q.materia))];
+            const simuladosRealizados = localStorage.getItem('simulados-realizados') || 0;
+
+            document.getElementById('total-questoes-stat').textContent = totalQuestoes;
+            document.getElementById('total-materias-stat').textContent = materias.length;
+            document.getElementById('total-simulados-stat').textContent = simuladosRealizados;
+        }
+
+        // Atualizar select de matérias
+        function atualizarSelectMaterias() {
+            const materias = [...new Set(questoes.map(q => q.materia))].sort();
+            const selects = ['materia', 'filtro-materia'];
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    const valorAtual = select.value;
+                    select.innerHTML = '<option value="">Todas as matérias</option>';
+                    materias.forEach(materia => {
+                        select.innerHTML += `<option value="${materia}">${materia}</option>`;
+                    });
+                    select.value = valorAtual;
+                }
+            });
+        }
+
+        // Mostrar tela específica
+        function mostrarTela(tela) {
+            const telas = ['home-screen', 'simulado-screen', 'resultado-screen', 'revisao-screen', 'admin-screen', 'questoes-screen', 'import-screen', 'manutencao-screen'];
+            telas.forEach(t => {
+                document.getElementById(t).classList.add('hidden');
+            });
+            document.getElementById(tela).classList.remove('hidden');
+        }
+
+        // Mostrar tela de importação
+        function mostrarImporte() {
+            mostrarTela('import-screen');
+            document.getElementById('template-ia').classList.add('hidden');
+        }
+
+        // Mostrar template para IA
+        function mostrarTemplate() {
+            document.getElementById('template-ia').classList.remove('hidden');
+        }
+
+        // Copiar template
+        function copiarTemplate() {
+            const template = document.getElementById('template-prompt').textContent;
+            navigator.clipboard.writeText(template).then(() => {
+                alert('Template copiado para a área de transferência!');
+            });
+        }
+
+        // Mostrar exemplo
+        function mostrarExemplo() {
+            const exemplo = JSON.stringify([questoesPadrao[0]], null, 2);
+            document.getElementById('json-questoes').value = exemplo;
+        }
+
+        // Carregar banco padrão
+        function carregarBancoPadrao() {
+            const bancoPadrao = JSON.stringify(questoesPadrao, null, 2);
+            document.getElementById('json-questoes').value = bancoPadrao;
+        }
+
+        // Importar questões em lote
+        function importarQuestoes() {
+            const jsonText = document.getElementById('json-questoes').value.trim();
+            const resultDiv = document.getElementById('import-result');
+            
+            if (!jsonText) {
+                resultDiv.innerHTML = '<div style="color: var(--danger); padding: 15px; background: #f8d7da; border-radius: 8px;">Por favor, cole o JSON das questões.</div>';
+                return;
+            }
+
+            try {
+                const novasQuestoes = JSON.parse(jsonText);
+                
+                if (!Array.isArray(novasQuestoes)) {
+                    throw new Error('O JSON deve ser um array de questões.');
+                }
+
+                let questoesValidas = 0;
+                let questoesInvalidas = 0;
+                const erros = [];
+
+                novasQuestoes.forEach((questao, index) => {
+                    try {
+                        // Validar estrutura da questão
+                        if (!questao.materia || !questao.pergunta || !questao.alternativas || !questao.resposta || !questao.explicacao) {
+                            throw new Error(`Questão ${index + 1}: Campos obrigatórios faltando`);
+                        }
+
+                        if (!questao.alternativas.A || !questao.alternativas.B || !questao.alternativas.C || !questao.alternativas.D || !questao.alternativas.E) {
+                            throw new Error(`Questão ${index + 1}: Todas as alternativas A, B, C, D, E são obrigatórias`);
+                        }
+
+                        if (!['A', 'B', 'C', 'D', 'E'].includes(questao.resposta)) {
+                            throw new Error(`Questão ${index + 1}: Resposta deve ser A, B, C, D ou E`);
+                        }
+
+                        // Adicionar questão com ID único
+                        const novaQuestao = {
+                            id: questoes.length + questoesValidas + 1,
+                            materia: questao.materia,
+                            dificuldade: questao.dificuldade || 'Médio',
+                            pergunta: questao.pergunta,
+                            alternativas: questao.alternativas,
+                            resposta: questao.resposta,
+                            explicacao: questao.explicacao
+                        };
+
+                        questoes.push(novaQuestao);
+                        questoesValidas++;
+
+                    } catch (error) {
+                        questoesInvalidas++;
+                        erros.push(error.message);
+                    }
+                });
+
+                // Salvar e atualizar
+                salvarQuestoes();
+
+                // Mostrar resultado
+                let resultHtml = `
+                    <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <strong>✅ Importação concluída!</strong><br>
+                        • Questões importadas: ${questoesValidas}<br>
+                        • Questões com erro: ${questoesInvalidas}<br>
+                        • Total de questões no sistema: ${questoes.length}
+                    </div>
+                `;
+
+                if (erros.length > 0) {
+                    resultHtml += `
+                        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px;">
+                            <strong>⚠️ Erros encontrados:</strong><br>
+                            ${erros.slice(0, 5).join('<br>')}
+                            ${erros.length > 5 ? `<br><em>... e mais ${erros.length - 5} erros</em>` : ''}
+                        </div>
+                    `;
+                }
+
+                resultDiv.innerHTML = resultHtml;
+
+                // Limpar textarea se sucesso total
+                if (questoesInvalidas === 0) {
+                    document.getElementById('json-questoes').value = '';
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px;">
+                        <strong>❌ Erro no JSON:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Limpar importação
+        function limparImporte() {
+            document.getElementById('json-questoes').value = '';
+            document.getElementById('import-result').innerHTML = '';
+        }
+
+        // Exportar questões
+        function exportarQuestoes() {
+            const dataStr = JSON.stringify(questoes, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'questoes-simulado.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Iniciar simulado
+        function iniciarSimulado() {
+            const materia = document.getElementById('materia').value;
+            const numQuestoes = parseInt(document.getElementById('numQuestoes').value);
+            const tempo = parseInt(document.getElementById('tempo').value);
+
+            if (questoes.length === 0) {
+                alert('Não há questões cadastradas! Adicione questões primeiro.');
+                return;
+            }
+
+            // Filtrar questões
+            let questoesFiltradas = questoes;
+            if (materia) {
+                questoesFiltradas = questoes.filter(q => q.materia === materia);
+            }
+
+            // Verificar se há questões suficientes
+            if (questoesFiltradas.length < numQuestoes) {
+                alert(`Não há questões suficientes de ${materia || 'todas as matérias'}. Disponíveis: ${questoesFiltradas.length}`);
+                return;
+            }
+
+            // Embaralhar e selecionar questões
+            questoesFiltradas = questoesFiltradas.sort(() => Math.random() - 0.5);
+            simuladoAtual.questoes = questoesFiltradas.slice(0, numQuestoes);
+            simuladoAtual.respostas = {};
+            simuladoAtual.questaoAtual = 0;
+            simuladoAtual.tempoInicial = tempo;
+            simuladoAtual.tempoRestante = tempo;
+
+            // Atualizar interface
+            document.getElementById('total-questoes').textContent = numQuestoes;
+            
+            // Iniciar timer
+            iniciarTimer();
+            
+            // Mostrar primeira questão
+            mostrarQuestao();
+            
+            // Ir para tela do simulado
+            mostrarTela('simulado-screen');
+        }
+
+        // Iniciar timer
+        function iniciarTimer() {
+            if (simuladoAtual.timer) {
+                clearInterval(simuladoAtual.timer);
+            }
+
+            simuladoAtual.timer = setInterval(() => {
+                simuladoAtual.tempoRestante--;
+                
+                const minutos = Math.floor(simuladoAtual.tempoRestante / 60);
+                const segundos = simuladoAtual.tempoRestante % 60;
+                
+                document.getElementById('tempo-restante').textContent = 
+                    `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                
+                if (simuladoAtual.tempoRestante <= 0) {
+                    finalizarSimulado();
+                }
+            }, 1000);
+        }
+
+        // Mostrar questão atual
+        function mostrarQuestao() {
+            const questao = simuladoAtual.questoes[simuladoAtual.questaoAtual];
+            const total = simuladoAtual.questoes.length;
+            const atual = simuladoAtual.questaoAtual + 1;
+
+            // Atualizar cabeçalho
+            document.getElementById('questao-atual').textContent = atual;
+            document.getElementById('progress-fill').style.width = `${(atual / total) * 100}%`;
+
+            // Criar HTML da questão
+            const html = `
+                <div class="question-card">
+                    <h3 style="margin-bottom: 15px; color: var(--primary);">
+                        <i class="fas fa-question-circle"></i> ${questao.materia} - ${questao.dificuldade}
+                    </h3>
+                    <p style="font-size: 18px; margin-bottom: 20px; line-height: 1.6;">
+                        ${questao.pergunta}
+                    </p>
+                    <div class="alternativas">
+                        ${Object.entries(questao.alternativas).map(([letra, texto]) => `
+                            <div class="question-card ${simuladoAtual.respostas[questao.id] === letra ? 'selected' : ''}" 
+                                 onclick="selecionarResposta('${questao.id}', '${letra}')">
+                                <strong>${letra})</strong> ${texto}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('questao-container').innerHTML = html;
+
+            // Atualizar botões
+            document.getElementById('btn-anterior').disabled = atual === 1;
+            document.getElementById('btn-proximo').classList.toggle('hidden', atual === total);
+            document.getElementById('btn-finalizar').classList.toggle('hidden', atual !== total);
+        }
+
+        // Selecionar resposta
+        function selecionarResposta(questaoId, letra) {
+            simuladoAtual.respostas[questaoId] = letra;
+            
+            // Atualizar visual
+            const alternativas = document.querySelectorAll('.alternativas .question-card');
+            alternativas.forEach(alt => alt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Próxima questão
+        function proximaQuestao() {
+            if (simuladoAtual.questaoAtual < simuladoAtual.questoes.length - 1) {
+                simuladoAtual.questaoAtual++;
+                mostrarQuestao();
+            }
+        }
+
+        // Questão anterior
+        function questaoAnterior() {
+            if (simuladoAtual.questaoAtual > 0) {
+                simuladoAtual.questaoAtual--;
+                mostrarQuestao();
+            }
+        }
+
+        // Finalizar simulado
+        function finalizarSimulado() {
+            clearInterval(simuladoAtual.timer);
+            
+            // Calcular resultado
+            let acertos = 0;
+            simuladoAtual.questoes.forEach(questao => {
+                if (simuladoAtual.respostas[questao.id] === questao.resposta) {
+                    acertos++;
+                }
+            });
+
+            const total = simuladoAtual.questoes.length;
+            const percentual = Math.round((acertos / total) * 100);
+            const tempoUtilizado = simuladoAtual.tempoInicial - simuladoAtual.tempoRestante;
+            const minutosUtilizados = Math.floor(tempoUtilizado / 60);
+
+            // Salvar estatística
+            const simuladosRealizados = parseInt(localStorage.getItem('simulados-realizados') || 0) + 1;
+            localStorage.setItem('simulados-realizados', simuladosRealizados);
+
+            // Atualizar resultado
+            document.getElementById('pontuacao-percent').textContent = `${percentual}%`;
+            document.getElementById('pontuacao-texto').textContent = `${acertos}/${total}`;
+            document.getElementById('tempo-utilizado').textContent = `${minutosUtilizados}min`;
+
+            // Cor do círculo baseada na pontuação
+            const circulo = document.getElementById('resultado-circle');
+            if (percentual >= 70) {
+                circulo.style.background = 'var(--success)';
+            } else if (percentual >= 50) {
+                circulo.style.background = 'var(--warning)';
+            } else {
+                circulo.style.background = 'var(--danger)';
+            }
+
+            mostrarTela('resultado-screen');
+        }
+
+        // Mostrar revisão
+        function mostrarRevisao() {
+            let html = '';
+            
+            simuladoAtual.questoes.forEach((questao, index) => {
+                const respostaUsuario = simuladoAtual.respostas[questao.id];
+                const acertou = respostaUsuario === questao.resposta;
+                
+                html += `
+                    <div class="question-card ${acertou ? 'correct' : 'incorrect'}">
+                        <h4 style="margin-bottom: 15px;">
+                            <i class="fas fa-${acertou ? 'check-circle' : 'times-circle'}"></i>
+                            Questão ${index + 1} - ${questao.materia}
+                            <span style="float: right; color: ${acertou ? 'var(--success)' : 'var(--danger)'};">
+                                ${acertou ? 'CORRETA' : 'INCORRETA'}
+                            </span>
+                        </h4>
+                        <p style="margin-bottom: 15px;"><strong>Pergunta:</strong> ${questao.pergunta}</p>
+                        
+                        <div style="margin-bottom: 15px;">
+                            ${Object.entries(questao.alternativas).map(([letra, texto]) => {
+                                let classe = '';
+                                let icone = '';
+                                
+                                if (letra === questao.resposta) {
+                                    classe = 'correct';
+                                    icone = '<i class="fas fa-check"></i>';
+                                } else if (letra === respostaUsuario) {
+                                    classe = 'incorrect';
+                                    icone = '<i class="fas fa-times"></i>';
+                                }
+                                
+                                return `<div class="question-card ${classe}" style="margin: 5px 0;">
+                                    <strong>${letra})</strong> ${texto} ${icone}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        
+                        <div style="background: var(--light); padding: 15px; border-radius: 8px;">
+                            <strong><i class="fas fa-lightbulb"></i> Explicação:</strong>
+                            <p style="margin-top: 10px;">${questao.explicacao}</p>
+                        </div>
+                        
+                        ${respostaUsuario ? `
+                            <p style="margin-top: 10px;">
+                                <strong>Sua resposta:</strong> ${respostaUsuario} | 
+                                <strong>Resposta correta:</strong> ${questao.resposta}
+                            </p>
+                        ` : '<p style="margin-top: 10px; color: var(--warning);"><strong>Não respondida</strong></p>'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('revisao-container').innerHTML = html;
+            mostrarTela('revisao-screen');
+        }
+
+        // Voltar ao resultado
+        function voltarResultado() {
+            mostrarTela('resultado-screen');
+        }
+
+        // Novo simulado
+        function novoSimulado() {
+            if (simuladoAtual.timer) {
+                clearInterval(simuladoAtual.timer);
+            }
+            mostrarTela('home-screen');
+        }
+
+        // Mostrar administração
+        function mostrarAdmin() {
+            mostrarTela('admin-screen');
+        }
+
+        // Voltar para home
+        function voltarHome() {
+            mostrarTela('home-screen');
+        }
+
+        // Adicionar nova questão
+        document.getElementById('form-questao').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const novaQuestao = {
+                id: questoes.length + 1,
+                materia: document.getElementById('nova-materia').value,
+                dificuldade: document.getElementById('nova-dificuldade').value,
+                pergunta: document.getElementById('nova-pergunta').value,
+                alternativas: {
+                    A: document.getElementById('nova-alternativa-a').value,
+                    B: document.getElementById('nova-alternativa-b').value,
+                    C: document.getElementById('nova-alternativa-c').value,
+                    D: document.getElementById('nova-alternativa-d').value,
+                    E: document.getElementById('nova-alternativa-e').value
+                },
+                resposta: document.getElementById('nova-resposta').value,
+                explicacao: document.getElementById('nova-explicacao').value
+            };
+            
+            questoes.push(novaQuestao);
+            salvarQuestoes();
+            
+            // Limpar formulário
+            document.getElementById('form-questao').reset();
+            
+            alert('Questão adicionada com sucesso!');
+        });
+
+        // Mostrar questões
+        function mostrarQuestoes() {
+            atualizarListaQuestoes();
+            mostrarTela('questoes-screen');
+        }
+
+        // Atualizar lista de questões
+        function atualizarListaQuestoes() {
+            const filtroMateria = document.getElementById('filtro-materia') ? document.getElementById('filtro-materia').value : '';
+            
+            let questoesFiltradas = questoes;
+            if (filtroMateria) {
+                questoesFiltradas = questoes.filter(q => q.materia === filtroMateria);
+            }
+            
+            const html = questoesFiltradas.map(questao => `
+                <div class="question-item">
+                    <strong>${questao.materia} - ${questao.dificuldade}</strong>
+                    <p>${questao.pergunta}</p>
+                    <small>Resposta: ${questao.resposta}</small>
+                    <button class="btn btn-danger" onclick="excluirQuestao(${questao.id})" style="float: right; padding: 5px 10px; font-size: 12px;">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                </div>
+            `).join('');
+            
+            document.getElementById('lista-questoes').innerHTML = html || '<p>Nenhuma questão encontrada.</p>';
+        }
+
+        // Filtrar questões
+        function filtrarQuestoes() {
+            atualizarListaQuestoes();
+        }
+
+        // Excluir questão
+        function excluirQuestao(id) {
+            if (confirm('Tem certeza que deseja excluir esta questão?')) {
+                questoes = questoes.filter(q => q.id !== id);
+                salvarQuestoes();
+                atualizarListaQuestoes();
+            }
+        }
+
+        // Inicializar quando a página carregar
+// === FUNÇÕES DE MANUTENÇÃO ===
+
+// Mostrar opções de manutenção
+function mostrarOpcoesManutenção() {
+    atualizarSelectMateriaLimpeza();
+    atualizarEstatisticasDetalhadas();
+    mostrarTela('manutencao-screen');
+}
+
+// Atualizar select de matérias para limpeza
+function atualizarSelectMateriaLimpeza() {
+    const materias = [...new Set(questoes.map(q => q.materia))].sort();
+    const select = document.getElementById('materia-limpeza');
+    select.innerHTML = '<option value="">Selecione uma matéria...</option>';
+    materias.forEach(materia => {
+        const count = questoes.filter(q => q.materia === materia).length;
+        select.innerHTML += `<option value="${materia}">${materia} (${count} questões)</option>`;
+    });
+}
+
+// Limpar questões por matéria
+function limparPorMateria() {
+    const materia = document.getElementById('materia-limpeza').value;
+    if (!materia) {
+        alert('Selecione uma matéria para remover!');
+        return;
+    }
+
+    const questoesMateria = questoes.filter(q => q.materia === materia);
+    const quantidade = questoesMateria.length;
+
+    if (quantidade === 0) {
+        alert('Não há questões desta matéria para remover!');
+        return;
+    }
+
+    if (confirm(`Tem certeza que deseja remover todas as ${quantidade} questões de ${materia}?\n\nEsta ação não pode ser desfeita!`)) {
+        questoes = questoes.filter(q => q.materia !== materia);
+        salvarQuestoes();
+        
+        document.getElementById('resultado-manutencao').innerHTML = `
+            <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px;">
+                <strong>✅ Limpeza concluída!</strong><br>
+                Removidas ${quantidade} questões de ${materia}.<br>
+                Restam ${questoes.length} questões no sistema.
+            </div>
+        `;
+        
+        atualizarSelectMateriaLimpeza();
+        atualizarEstatisticasDetalhadas();
+    }
+}
+
+// Habilitar botão de limpeza total
+document.getElementById('confirmo-exclusao').addEventListener('change', function() {
+    const confirmado = this.checked;
+    document.getElementById('btn-limpeza-total').disabled = !confirmado;
+});
+
+// Confirmar limpeza total
+function confirmarLimpezaTotal() {
+    const manterPadrao = document.getElementById('manter-padrao').checked;
+    const confirmado = document.getElementById('confirmo-exclusao').checked;
+    
+    if (!confirmado) {
+        alert('Você precisa confirmar a exclusão!');
+        return;
+    }
+
+    const totalAtual = questoes.length;
+    const textoAcao = manterPadrao ? 
+        `apagar todas as questões EXCETO as 3 questões padrão` : 
+        `apagar TODAS as ${totalAtual} questões`;
+
+    const confirmacao1 = confirm(
+        `⚠️ ATENÇÃO: Você está prestes a ${textoAcao}!\n\n` +
+        `Esta ação é IRREVERSÍVEL!\n\n` +
+        `Deseja continuar?`
+    );
+
+    if (!confirmacao1) return;
+
+    const confirmacao2 = confirm(
+        `🚨 ÚLTIMA CONFIRMAÇÃO!\n\n` +
+        `Confirma que quer ${textoAcao}?\n\n` +
+        `Digite SIM se tem certeza, ou cancele agora.`
+    );
+
+    if (!confirmacao2) return;
+
+    // Executar limpeza
+    if (manterPadrao) {
+        questoes = [...questoesPadrao];
+    } else {
+        questoes = [];
+    }
+
+    salvarQuestoes();
+    
+    // Resetar checkboxes
+    document.getElementById('manter-padrao').checked = false;
+    document.getElementById('confirmo-exclusao').checked = false;
+    document.getElementById('btn-limpeza-total').disabled = true;
+
+    const questoesRestantes = questoes.length;
+    const textoResultado = questoesRestantes > 0 ? 
+        `Mantidas ${questoesRestantes} questões padrão.` : 
+        'Todas as questões foram removidas.';
+
+    document.getElementById('resultado-manutencao').innerHTML = `
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px;">
+            <strong>✅ Limpeza total concluída!</strong><br>
+            Removidas ${totalAtual - questoesRestantes} questões.<br>
+            ${textoResultado}
+        </div>
+    `;
+    
+    atualizarSelectMateriaLimpeza();
+    atualizarEstatisticasDetalhadas();
+}
+
+// Atualizar estatísticas detalhadas
+function atualizarEstatisticasDetalhadas() {
+    const materias = {};
+    const dificuldades = {};
+    
+    questoes.forEach(q => {
+        // Contar por matéria
+        materias[q.materia] = (materias[q.materia] || 0) + 1;
+        
+        // Contar por dificuldade
+        dificuldades[q.dificuldade] = (dificuldades[q.dificuldade] || 0) + 1;
+    });
+
+    let html = `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">${questoes.length}</div>
+                <div>Total de Questões</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${Object.keys(materias).length}</div>
+                <div>Matérias Diferentes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${(localStorage.getItem('questoes') || '[]').length}</div>
+                <div>Tamanho do Banco (chars)</div>
+            </div>
+        </div>
+        
+        <h5 style="margin: 20px 0 10px 0;"><i class="fas fa-book"></i> Por Matéria:</h5>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+    `;
+    
+    Object.entries(materias).sort(([,a], [,b]) => b - a).forEach(([materia, count]) => {
+        html += `
+            <div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">
+                <strong>${materia}</strong><br>
+                <span style="color: var(--primary); font-size: 1.2em;">${count}</span> questões
+            </div>
+        `;
+    });
+    
+    html += `</div>
+        <h5 style="margin: 20px 0 10px 0;"><i class="fas fa-signal"></i> Por Dificuldade:</h5>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+    `;
+    
+    ['Fácil', 'Médio', 'Difícil'].forEach(nivel => {
+        const count = dificuldades[nivel] || 0;
+        html += `
+            <div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">
+                <strong>${nivel}</strong><br>
+                <span style="color: var(--primary); font-size: 1.2em;">${count}</span> questões
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    document.getElementById('stats-detalhadas').innerHTML = html;
+}
+        document.addEventListener('DOMContentLoaded', carregarDados);
+    </script>
+</body>
+</html>
